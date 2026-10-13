@@ -1,6 +1,7 @@
 
 const $=id=>document.getElementById(id);let pid='',project=null,jid='',config={},pollTimer=null,busy=false;
 let treeModel=null;
+let localProject=null;
 const folderOpen=new Map();
 const folderControls=[];
 
@@ -8,7 +9,7 @@ function showError(message){$('error').textContent=message;$('error').hidden=fal
 function clearError(){$('error').hidden=true}
 function lockInputs(value){
   busy=value;
-  for(const id of ['open','folderButton','zipButton','jdps','build','all','none','title','name','vendor','version','icon'])$(id).disabled=value;
+  for(const id of ['open','folderButton','zipButton','selectProjectFolder','cancelLocalProject','jdps','build','all','none','title','name','vendor','version','icon'])$(id).disabled=value;
   if(project)renderTree();
 }
 function makeTree(files){
@@ -89,6 +90,7 @@ $('expand').onclick=()=>{
 $('theme').value=document.documentElement.dataset.theme||'system';
 $('theme').onchange=()=>{document.documentElement.dataset.theme=$('theme').value;try{localStorage.setItem('bb-theme',$('theme').value)}catch{}};
 $('open').onclick=action(async()=>{
+  if(!config.native_picker){$('jdpFile').click();return}
   lockInputs(true);$('toolStatus').textContent='파일 선택 창에서 JDP를 선택하세요.';
   try{
     const data=await api('/api/open-dialog',{method:'POST'});
@@ -114,13 +116,38 @@ setInterval(async()=>{
   if(document.hidden||busy||$('resultArea').hidden)return;
   try{config=await api('/api/config');updateUploadState()}catch{}
 },5000);
-(async()=>{try{config=await api('/api/config');$('open').hidden=!config.native_picker;$('toolStatus').textContent=config.tools_ready?'Java6 / JDE 7.1':'Java6 / JDE 경로를 확인하세요'}catch(e){showError(e.message)}})();
+(async()=>{try{config=await api('/api/config');$('toolStatus').textContent=config.tools_ready?'Java6 / JDE 7.1':'Java6 / JDE 경로를 확인하세요'}catch(e){showError(e.message)}})();
 async function api(url,options={}){const response=await fetch(url.replace(/^\//,''),options);if(!response.ok){const data=await response.json().catch(()=>({detail:response.statusText}));throw Error(typeof data.detail==='string'?data.detail:JSON.stringify(data.detail))}return response.json()}
 function json(body){return {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}}
 function action(fn){return async()=>{clearError();try{await fn()}catch(e){showError(e.message)}}}
-function setProject(data){pid=data.id;$('jdps').replaceChildren(...data.jdps.map(p=>new Option(p,p)));$('jdpPicker').hidden=data.jdps.length<2;$('location').hidden=!data.location;renderProject(data.project)}
+function setProject(data){localProject=null;$('localProject').hidden=true;pid=data.id;$('jdps').replaceChildren(...data.jdps.map(p=>new Option(p,p)));$('jdpPicker').hidden=data.jdps.length<2;$('location').hidden=!data.location;renderProject(data.project)}
 function updateCount(){$('count').textContent=`${project.files.filter(f=>f.selected).length}개 선택 / ${project.files.length}개 파일`}
-async function importFiles(files,folder){lockInputs(true);$('toolStatus').textContent='프로젝트 가져오는 중…';try{const form=new FormData();for(const file of files)form.append('files',file);form.append('paths',JSON.stringify([...files].map(f=>folder?f.webkitRelativePath:f.name)));setProject(await api('/api/import',{method:'POST',body:form}))}finally{lockInputs(false);$('toolStatus').textContent=config.tools_ready?'Java6 / JDE 7.1':'Java6 / JDE 경로를 확인하세요'}}
+async function importFiles(files,folder,paths){lockInputs(true);$('toolStatus').textContent='프로젝트 가져오는 중…';try{const form=new FormData();for(const file of files)form.append('files',file);form.append('paths',JSON.stringify(paths||[...files].map(f=>folder?f.webkitRelativePath:f.name)));setProject(await api('/api/import',{method:'POST',body:form}))}finally{lockInputs(false);$('toolStatus').textContent=config.tools_ready?'Java6 / JDE 7.1':'Java6 / JDE 경로를 확인하세요'}}
+$('jdpFile').onchange=action(async()=>{
+  const file=$('jdpFile').files[0];$('jdpFile').value='';if(!file)return;
+  localProject=null;$('localProject').hidden=true;
+  if(!file.name.toLowerCase().endsWith('.jdp'))throw Error('JDP 파일을 선택하세요.');
+  localProject=await JdpImport.prepare(file);
+  $('localProjectHint').textContent=`${file.name} · 참조 파일 ${localProject.paths.length}개. JDP가 있는 폴더를 선택하세요.`;
+  $('localProject').hidden=false;
+});
+$('cancelLocalProject').onclick=()=>{localProject=null;$('localProject').hidden=true;clearError()};
+async function importLocalProject(read){
+  if(!localProject||busy)return;
+  lockInputs(true);$('toolStatus').textContent='JDP 참조 파일 확인 중…';
+  try{const selection=await read(localProject);await importFiles(selection.files,false,selection.paths)}
+  finally{lockInputs(false);$('toolStatus').textContent=config.tools_ready?'Java6 / JDE 7.1':'Java6 / JDE 경로를 확인하세요'}
+}
+$('selectProjectFolder').onclick=action(async()=>{
+  if(!localProject||busy)return;
+  if(window.isSecureContext&&window.showDirectoryPicker){
+    try{const directory=await window.showDirectoryPicker({id:'bb-project',mode:'read'});await importLocalProject(p=>JdpImport.fromDirectory(p,directory))}
+    catch(error){if(error.name==='AbortError')return;if(error.name==='SecurityError'){$('jdpFolder').click();return}throw error}
+  }else $('jdpFolder').click();
+});
+$('jdpFolder').onchange=action(async()=>{
+  const files=[...$('jdpFolder').files];$('jdpFolder').value='';if(files.length)await importLocalProject(p=>JdpImport.fromFiles(p,files));
+});
 $('folderButton').onclick=()=>$('folder').click();$('zipButton').onclick=()=>$('zip').click();$('folder').onchange=action(async()=>{if($('folder').files.length)await importFiles($('folder').files,true);$('folder').value=''});$('zip').onchange=action(async()=>{if($('zip').files.length)await importFiles($('zip').files,false);$('zip').value=''});
 $('jdps').onchange=action(async()=>renderProject(await api(`/api/projects/${pid}?jdp=${encodeURIComponent($('jdps').value)}`)));
 $('search').oninput=()=>project&&renderTree();$('all').onclick=()=>{project.files.forEach(f=>f.selected=f.exists);renderTree()};$('none').onclick=()=>{project.files.forEach(f=>f.selected=false);renderTree()};

@@ -156,6 +156,11 @@ def ui_script():
     return FileResponse(ROOT / 'app.js', media_type='application/javascript')
 
 
+@app.get('/jdp-import.js')
+def import_script():
+    return FileResponse(ROOT / 'jdp-import.js', media_type='application/javascript')
+
+
 @app.get('/api/config')
 def config():
     return {'tools_ready': JAVA.is_file() and all((TOOLS / p).is_file() for p in ['JDE71/bin/rapc.jar', 'JDE71/lib/net_rim_api.jar']),
@@ -275,7 +280,7 @@ async def import_project(files: list[UploadFile] = File(...), paths: str = Form(
                 seen.add(target)
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(data)
-        jdps = sorted(p.relative_to(root).as_posix() for p in root.rglob('*.jdp'))
+        jdps = sorted(p.relative_to(root).as_posix() for p in root.rglob('*') if p.is_file() and p.suffix.lower() == '.jdp')
         if not jdps:
             raise ValueError('JDP가 없습니다. JDP와 소스·리소스를 포함한 프로젝트 폴더/ZIP을 선택해 주세요.')
         result = register(root, jdps)

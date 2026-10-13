@@ -74,6 +74,18 @@ HTTPS 설정이나 기존 Nginx 파일은 이 저장소가 자동으로 변경�
 서버에서는 JDP 선택 창 대신 PC의 **폴더 가져오기 / ZIP 가져오기**를 사용한다.
 JDP 파일만 전송하면 소스와 리소스를 서버가 읽을 수 없으므로 전체 프로젝트를 가져온다.
 
+## 프로젝트 열기
+
+서버 웹 화면의 **JDP 열기**에서 PC의 JDP를 선택한 다음 **프로젝트 폴더 선택**을 누른다.
+선택한 JDP가 있는 폴더를 허용하면 `[Files]`와 `[Icons]`에 나열된 파일 및 JDP만 전송한다.
+빠진 파일이나 잘못 선택한 폴더는 전송 전에 알려준다. 참조하지 않은 파일은 전송하지 않는다.
+JDP 경로는 프로젝트 폴더 안의 상대 경로여야 한다.
+
+폴더 접근 API를 지원하는 HTTPS 브라우저에서는 참조 파일만 직접 읽는다.
+다른 브라우저에서는 기본 폴더 선택 창을 사용하고, 선택된 파일 중 참조 파일만 전송한다.
+기존 **폴더 가져오기**와 **ZIP 가져오기**는 전체 프로젝트를 가져오거나 파일을 추가로 선택할 때 사용할 수 있다.
+Windows 로컬 빌더의 JDP 열기는 기존처럼 PC 파일을 직접 읽는다.
+
 ## 업데이트와 운영
 
 ```sh
@@ -124,6 +136,7 @@ PC 로컬 모드에서는 JDP 열기가 Windows 파일 선택 창을 사용한�
 ```sh
 python -m pip install -r requirements-dev.txt
 python -m unittest discover -p test_builder.py
+node --test test_jdp_import.js
 ```
 
 Docker/Nginx 통합 smoke test는 `deploy/smoke.py`에 있다.

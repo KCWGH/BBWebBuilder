@@ -54,9 +54,11 @@ td{padding:7px 0}
 <div class="toolbar"><button id="open">JDP 열기</button><button id="folderButton">폴더 가져오기</button><button id="zipButton">ZIP 가져오기</button><span id="toolStatus">도구 확인 중…</span></div>
 <p id="location" hidden></p>
 <input id="folder" type="file" webkitdirectory multiple hidden><input id="zip" type="file" accept=".zip" hidden>
+<input id="jdpFile" type="file" accept=".jdp" hidden><input id="jdpFolder" type="file" webkitdirectory multiple hidden>
+<div id="localProject" class="row" style="margin-top:10px" hidden><span id="localProjectHint"></span><button id="selectProjectFolder">프로젝트 폴더 선택</button><button id="cancelLocalProject">취소</button></div>
 <div id="jdpPicker" hidden><label for="jdps">JDP</label><select id="jdps"></select></div>
 <div id="error" role="alert" hidden></div>
-<p id="empty">JDP를 열거나, JDP와 소스가 들어 있는 폴더·ZIP을 가져오세요.</p>
+<p id="empty">JDP를 선택한 뒤 해당 프로젝트 폴더를 선택하세요. JDP가 참조하는 파일만 서버로 전송합니다.</p>
 <div id="projectArea" hidden>
 <section class="settings" aria-label="앱 설정"><div class="settings-heading"><h2>앱 설정</h2><span id="projectLabel"></span></div>
 <div class="fields"><div><label for="title">앱 이름</label><input id="title" maxlength="100"></div><div><label for="name">모듈 이름 (영문·숫자·_)</label><input id="name" pattern="[A-Za-z][A-Za-z0-9_]{0,63}"></div><div><label for="vendor">개발자</label><input id="vendor" maxlength="100"></div><div><label for="version">버전</label><input id="version" placeholder="1.0.0"></div><div><label for="icon">아이콘 (16 KiB 이하)</label><select id="icon"></select></div></div></section>
@@ -69,5 +71,5 @@ td{padding:7px 0}
 </div></div>
 <details id="storeDetails" style="margin-top:16px;border:1px solid var(--line)"><summary class="files-summary">앱스토어</summary><div class="result-content"><div class="row"><button id="storeRefresh">새로고침</button><span id="storeStatus" role="status"></span></div><div style="overflow:auto"><table aria-label="앱스토어 앱 목록"><thead><tr><th scope="col">앱 이름</th><th scope="col">버전</th><th scope="col">상태</th><th scope="col">관리</th></tr></thead><tbody id="storeApps"></tbody></table></div></div></details>
 </main>
-<script src="app.js"></script>
+<script src="jdp-import.js"></script><script src="app.js"></script>
 </body></html>
