@@ -5,59 +5,52 @@
 <title>BlackBerry 빌더</title>
 <script>try{document.documentElement.dataset.theme=localStorage.getItem('bb-theme')||'system'}catch{}</script>
 <style>
-:root{color-scheme:light;--bg:Canvas;--surface:ButtonFace;--text:CanvasText;--muted:GrayText;--line:ButtonBorder;--link:LinkText;--error:#ae2424}
+:root{color-scheme:light;--muted:GrayText;--line:ButtonBorder;--surface:ButtonFace;--error:#ae2424}
 :root[data-theme="dark"]{color-scheme:dark;--error:#ffa3a3}
 @media(prefers-color-scheme:dark){:root[data-theme="system"]{color-scheme:dark;--error:#ffa3a3}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:13px/1.5 system-ui,sans-serif}header{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:10px 20px;border-bottom:1px solid var(--line)}h1{margin:0;font-size:16px;font-weight:600}h2{margin:0;font-size:13px;font-weight:600}main{padding:16px 20px;max-width:1500px;margin:auto}
-button,input,select{font:inherit}a{color:var(--link)}label{display:block}input:not([type="checkbox"]),.fields select{width:100%}input[type="checkbox"]{margin:0;flex:none}
-.toolbar,.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.theme{display:flex;align-items:center;gap:6px}.toolbar{padding-bottom:12px;border-bottom:1px solid var(--line)}#location{font-size:12px;color:var(--muted);margin:8px 0 0;overflow-wrap:anywhere}#toolStatus{margin-left:auto;color:var(--muted);font-size:12px}#jdpPicker{margin-top:10px}#jdpPicker label{display:inline;margin-right:8px}#empty{padding:24px 0;color:var(--muted)}#error{color:var(--error);border:1px solid var(--error);padding:8px 10px;margin:12px 0;white-space:pre-wrap}[hidden]{display:none!important}
-.settings{padding:14px 0}.settings-heading{display:flex;align-items:baseline;flex-wrap:wrap;gap:12px;margin-bottom:8px}#projectLabel{color:var(--muted);font-size:12px;overflow-wrap:anywhere}.fields{display:grid;grid-template-columns:1.2fr 1fr 1fr .65fr 1.5fr;gap:12px}.fields label{color:var(--muted);font-size:12px;margin-bottom:4px}.workspace{display:grid;grid-template-columns:minmax(280px,1.15fr) minmax(260px,1fr);border:1px solid var(--line)}.file-panel{border-right:1px solid var(--line);min-width:0}.panel-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 12px;background:var(--surface);border-bottom:1px solid var(--line)}.file-filter{padding:10px 12px 0}
-#tree{height:460px;overflow:auto;padding:8px 12px}#tree ul{list-style:none;margin:0;padding:0}#tree ul.children{margin-left:8px;padding-left:16px;border-left:1px solid var(--line)}#tree summary{cursor:pointer;padding:3px 0;white-space:nowrap}.folder-content{display:inline-flex;align-items:center;gap:7px;vertical-align:middle}.folder-name{font-weight:600}.folder-count{color:var(--muted);font-size:11px}.file{display:flex;align-items:center;gap:7px;padding:4px 5px 4px 14px;white-space:nowrap;width:max-content;min-width:100%}.file-name{font:12px/1.5 Consolas,'Malgun Gothic',monospace}.missing{color:var(--error)}.file-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-top:1px solid var(--line)}#count{font-size:12px;color:var(--muted)}.output-panel{min-width:0}#status{color:var(--muted);font-size:12px}pre{margin:0;padding:10px 12px;font:12px/1.6 Consolas,'Malgun Gothic',monospace;white-space:pre-wrap;overflow-wrap:anywhere;overflow:auto}#logs{height:190px}#resultArea{border-top:1px solid var(--line)}.result-content{padding:10px 12px}table{border-collapse:collapse;width:100%}td{padding:4px 0;border-bottom:1px solid var(--line)}td:first-child{overflow-wrap:anywhere}td:last-child{color:var(--muted);text-align:right;padding-left:10px;white-space:nowrap;font-size:12px}#otaNotice,#uploadHint{font-size:12px;color:var(--muted);margin:10px 0}#uploadResult{padding:8px 0;max-height:150px}
-@media(max-width:850px){.fields{grid-template-columns:1fr 1fr}.fields>div:last-child{grid-column:1/-1}.workspace{grid-template-columns:1fr}.file-panel{border-right:0;border-bottom:1px solid var(--line)}#tree{height:350px}#toolStatus{margin-left:0;width:100%}}@media(max-width:480px){header{padding:10px 12px}main{padding:12px}.fields{gap:8px}}
-/* Layout and spacing only; controls retain their browser appearance. */
-header{max-width:1120px;margin:auto;padding:14px 20px}
-main{max-width:1120px;padding:16px 20px 24px}
-button,select,input:not([type="checkbox"]){min-height:30px;padding:3px 7px}
-button{white-space:nowrap}
-.toolbar{gap:8px;padding-bottom:14px}
-.settings{padding:18px 0}
-.settings-heading{margin-bottom:12px}
-.fields{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 110px;grid-template-areas:"title name version" "vendor icon icon";gap:10px 16px;align-items:end}
-.fields>div:nth-child(1){grid-area:title}
-.fields>div:nth-child(2){grid-area:name}
-.fields>div:nth-child(3){grid-area:vendor}
-.fields>div:nth-child(4){grid-area:version}
-.fields>div:nth-child(5){grid-area:icon}
-.fields label{margin-bottom:5px}
-.workspace{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;border:0;align-items:start}
-.file-panel{border:1px solid var(--line)}
-.output-panel>section{border:1px solid var(--line)}
-.panel-heading{min-height:44px;padding:8px 12px}
-.panel-heading .row{gap:6px}
-.panel-heading button{min-height:26px;padding:2px 6px;font-size:12px}
-.file-filter{padding:12px 12px 4px}
-#tree{height:auto;min-height:240px;max-height:480px;max-height:min(52vh,480px);padding:6px 12px 12px}
-.file-footer{padding:10px 12px;min-height:48px}
-#logs{height:auto;min-height:76px;max-height:260px;padding:12px}
-#resultArea{margin-top:16px}
-.result-content{padding:8px 12px 12px}
-td{padding:7px 0}
-@media(max-width:850px){.workspace{grid-template-columns:1fr}.file-panel{border-right:1px solid var(--line)}.fields{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"title name" "vendor version" "icon icon"}.fields>div:last-child{grid-column:auto}#tree{max-height:350px}#toolStatus{width:auto;margin-left:auto}}
-@media(max-width:480px){header{padding:12px}main{padding:12px}.toolbar{gap:6px}#toolStatus{margin-left:0;width:100%}.fields{gap:10px}.panel-heading .row{width:100%}.panel-heading{gap:6px}}
-.files-summary{padding:10px 12px;cursor:pointer;background:var(--surface)}
-#storeDetails th{text-align:left;font-weight:600;padding:10px 0 6px;border-bottom:1px solid var(--line)}#storeDetails td:last-child{text-align:left}#storeDetails th,#storeDetails td{padding-right:12px}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:Canvas;color:CanvasText;font:14px/1.5 system-ui,sans-serif}
+header,main{max-width:1440px;margin:auto;padding:16px 24px}
+header{display:flex;justify-content:space-between;align-items:center;gap:16px;border-bottom:1px solid var(--line)}
+h1{margin:0;font-size:17px;font-weight:600}h2{margin:0;font-size:14px;font-weight:600}
+button,input,select{font:inherit;min-width:0}button,select,input:not([type="checkbox"]){min-height:34px;padding:4px 8px}button{cursor:pointer}
+a{color:LinkText;overflow-wrap:anywhere}label{display:block}input:not([type="checkbox"]),.fields select{width:100%}
+input[type="checkbox"]{margin:0;flex:none}.theme,.toolbar,.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.theme{flex-wrap:nowrap}
+.app-layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(320px,1fr);gap:24px;align-items:start}.builder-panel,.store-panel{min-width:0}
+.toolbar{padding-bottom:14px;border-bottom:1px solid var(--line)}#toolStatus{color:var(--muted);font-size:12px;width:100%}
+#location,#projectLabel,#empty{color:var(--muted);overflow-wrap:anywhere}#location,#projectLabel{font-size:12px}#empty{margin:20px 0}
+#localProject{margin-top:10px}#localProjectHint{flex-basis:100%;overflow-wrap:anywhere}
+#jdpPicker{margin-top:12px}#jdps{max-width:100%}#error{color:var(--error);border:1px solid var(--error);padding:10px;margin:0 0 16px;white-space:pre-wrap;overflow-wrap:anywhere}
+.settings{padding:18px 0}.settings-heading{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px 16px;align-items:end}.fields>div:last-child{grid-column:1/-1}.fields label{color:var(--muted);font-size:12px;margin-bottom:4px}
+.workspace{display:grid;gap:16px}.file-panel,.output-panel>section,#storeDetails{border:1px solid var(--line);min-width:0}
+.panel-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;background:var(--surface);border-bottom:1px solid var(--line)}
+.files-summary{padding:10px 12px;cursor:pointer;background:var(--surface)}.file-filter{padding:12px 12px 4px}
+#tree{overflow:auto;min-height:180px;max-height:min(50vh,420px);padding:6px 12px 12px}#tree ul{list-style:none;margin:0;padding:0}#tree ul.children{margin-left:8px;padding-left:16px;border-left:1px solid var(--line)}#tree summary{cursor:pointer;padding:5px 0;white-space:nowrap}
+.folder-content{display:inline-flex;align-items:center;gap:8px;vertical-align:middle}.folder-name{font-weight:600}.folder-count{color:var(--muted);font-size:12px}.file{display:flex;align-items:center;gap:8px;padding:5px 5px 5px 14px;white-space:nowrap;width:max-content;min-width:100%}.file-name{font:12px/1.5 Consolas,'Malgun Gothic',monospace}.missing{color:var(--error)}
+.file-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-top:1px solid var(--line)}#count,#status,#moduleCount,#storeStatus{color:var(--muted);font-size:12px}
+pre{margin:0;font:12px/1.6 Consolas,'Malgun Gothic',monospace;white-space:pre-wrap;overflow-wrap:anywhere;overflow:auto}#logs{min-height:76px;max-height:240px;padding:12px}#resultArea{margin-top:16px}.result-content{padding:10px 12px 12px}
+.downloads{max-height:480px;overflow:auto}
+table{border-collapse:collapse;width:100%;table-layout:fixed}td,th{padding:8px 0;border-bottom:1px solid var(--line);text-align:left;overflow-wrap:anywhere}th{font-weight:600;font-size:12px}
+#results td:last-child{width:85px;text-align:right;padding-left:10px;color:var(--muted);white-space:nowrap;font-size:12px}#results .cod-toggle td{text-align:center;width:auto;padding:8px 0}#results .cod-toggle button{width:100%}
+#otaNotice,#uploadHint{font-size:12px;color:var(--muted);margin:12px 0 0}#uploadResult{padding:10px 0;max-height:150px}
+.store-panel{position:sticky;top:16px}#storeDetails .result-content{max-height:calc(100dvh - 150px);overflow:auto}#storeDetails .row{margin-bottom:8px}#storeDetails th,#storeDetails td{padding-right:8px}#storeDetails th:last-child,#storeDetails td:last-child{padding-right:0;width:62px}#storeDetails th:nth-child(2){width:66px}#storeDetails th:nth-child(3){width:76px}#storeDetails td:nth-child(2),#storeDetails td:nth-child(3){font-size:12px}
+@media(max-width:900px){.app-layout{grid-template-columns:minmax(0,1fr);gap:20px}.store-panel{position:static}#storeDetails .result-content{max-height:none}}
+@media(max-width:600px){header,main{padding:12px}button,select,input:not([type="checkbox"]){min-height:44px}input:not([type="checkbox"]),select{font-size:16px}.toolbar{gap:6px}.fields{gap:12px}.file{min-height:36px}#tree summary{min-height:36px}.panel-heading{gap:6px}.file-footer{flex-wrap:wrap}#build{min-width:84px}#storeDetails th:last-child,#storeDetails td:last-child{width:58px}#storeDetails th:nth-child(2){width:58px}#storeDetails th:nth-child(3){width:67px}}
+@media(max-width:360px){.fields{grid-template-columns:minmax(0,1fr)}.fields>div:last-child{grid-column:auto}header{flex-wrap:wrap}}
 </style>
 </head>
 <body>
 <header><h1>BlackBerry 빌더</h1><div class="theme"><label for="theme">화면</label><select id="theme"><option value="system">시스템</option><option value="light">라이트</option><option value="dark">다크</option></select></div></header>
 <main>
+<div id="error" role="alert" hidden></div>
+<div class="app-layout"><section class="builder-panel" aria-label="빌드 환경">
 <div class="toolbar"><button id="open">JDP 열기</button><button id="folderButton">폴더 가져오기</button><button id="zipButton">ZIP 가져오기</button><span id="toolStatus">도구 확인 중…</span></div>
 <p id="location" hidden></p>
 <input id="folder" type="file" webkitdirectory multiple hidden><input id="zip" type="file" accept=".zip" hidden>
 <input id="jdpFile" type="file" accept=".jdp" hidden><input id="jdpFolder" type="file" webkitdirectory multiple hidden>
 <div id="localProject" class="row" style="margin-top:10px" hidden><span id="localProjectHint"></span><button id="selectProjectFolder">프로젝트 폴더 선택</button><button id="cancelLocalProject">취소</button></div>
 <div id="jdpPicker" hidden><label for="jdps">JDP</label><select id="jdps"></select></div>
-<div id="error" role="alert" hidden></div>
 <p id="empty">JDP를 선택한 뒤 해당 프로젝트 폴더를 선택하세요. JDP가 참조하는 파일만 서버로 전송합니다.</p>
 <div id="projectArea" hidden>
 <section class="settings" aria-label="앱 설정"><div class="settings-heading"><h2>앱 설정</h2><span id="projectLabel"></span></div>
@@ -67,9 +60,11 @@ td{padding:7px 0}
 <div class="file-filter"><input id="search" type="search" placeholder="파일·폴더 검색" aria-label="파일·폴더 검색"></div><div id="tree" aria-label="프로젝트 파일"></div>
 </details><div class="file-footer"><span id="count"></span><button id="build" >빌드</button></div></section>
 <div class="output-panel"><section aria-label="빌드 로그"><div class="panel-heading"><h2>빌드 로그</h2><span id="status" role="status">준비됨</span></div><pre id="logs"></pre></section>
-<section id="resultArea" aria-label="빌드 결과" hidden><div class="panel-heading"><h2>빌드 결과</h2><span id="moduleCount"></span></div><div class="result-content"><table aria-label="다운로드 파일"><tbody id="results"></tbody></table><p id="otaNotice"></p><p id="uploadHint"></p><pre id="uploadResult" hidden></pre></div></section></div>
+<section id="resultArea" aria-label="빌드 결과" hidden><div class="panel-heading"><h2>빌드 결과</h2><span id="moduleCount"></span></div><div class="result-content"><div class="downloads"><table aria-label="다운로드 파일"><tbody id="results"></tbody></table></div><p id="otaNotice"></p><p id="uploadHint"></p><pre id="uploadResult" hidden></pre></div></section></div>
 </div></div>
-<details id="storeDetails" style="margin-top:16px;border:1px solid var(--line)"><summary class="files-summary">앱스토어</summary><div class="result-content"><div class="row"><button id="storeRefresh">새로고침</button><span id="storeStatus" role="status"></span></div><div style="overflow:auto"><table aria-label="앱스토어 앱 목록"><thead><tr><th scope="col">앱 이름</th><th scope="col">버전</th><th scope="col">상태</th><th scope="col">관리</th></tr></thead><tbody id="storeApps"></tbody></table></div></div></details>
+</section><aside class="store-panel" aria-label="앱스토어 관리">
+<details id="storeDetails" open><summary class="files-summary">앱스토어</summary><div class="result-content"><div class="row"><button id="storeRefresh">새로고침</button><span id="storeStatus" role="status"></span></div><div style="overflow:auto"><table aria-label="앱스토어 앱 목록"><thead><tr><th scope="col">앱 이름</th><th scope="col">버전</th><th scope="col">상태</th><th scope="col">관리</th></tr></thead><tbody id="storeApps"></tbody></table></div></div></details>
+</aside></div>
 </main>
 <script src="jdp-import.js"></script><script src="app.js"></script>
 </body></html>

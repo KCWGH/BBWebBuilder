@@ -99,12 +99,30 @@ $('open').onclick=action(async()=>{
 });
 function renderResults(job){
   $('resultArea').hidden=false;$('moduleCount').textContent=`COD ${job.modules}개`;$('results').replaceChildren();
-  const files=[...job.files].sort((a,b)=>Number(b.name.endsWith('.zip'))-Number(a.name.endsWith('.zip')));
-  for(const file of files){
+  const order=file=>file.name.endsWith('.zip')?0:file.name.endsWith('.jad')?1:2;
+  const metadata=job.files.filter(f=>!f.name.endsWith('.cod')).sort((a,b)=>order(a)-order(b)||a.name.localeCompare(b.name));
+  const moduleNumber=file=>Number(file.name.match(/-(\d+)\.cod$/)?.[1]||0);
+  const modules=job.files.filter(f=>f.name.endsWith('.cod')).sort((a,b)=>moduleNumber(a)-moduleNumber(b)||a.name.localeCompare(b.name,'en',{numeric:true}));
+  function appendFile(file){
     const row=document.createElement('tr'),name=document.createElement('td'),size=document.createElement('td'),link=document.createElement('a');
     link.href=`releases/${jid}/${encodeURIComponent(file.name)}`;link.textContent=file.name;link.download=file.name;
     name.append(link);size.textContent=`${(file.size/1024).toFixed(1)} KiB`;row.append(name,size);$('results').append(row);
   }
+  let expanded=false;
+  function renderDownloads(){
+    $('results').replaceChildren();metadata.forEach(appendFile);
+    if(modules.length<=8){modules.forEach(appendFile);return}
+    modules.slice(0,3).forEach(appendFile);
+    const row=document.createElement('tr'),cell=document.createElement('td'),toggle=document.createElement('button');
+    row.className='cod-toggle';cell.colSpan=2;
+    toggle.textContent=expanded?'중간 COD 접기':`… COD ${modules.length-6}개 생략 · 펼치기`;
+    toggle.setAttribute('aria-expanded',String(expanded));
+    toggle.onclick=()=>{expanded=!expanded;renderDownloads();$('results').querySelector('.cod-toggle button').focus()};
+    cell.append(toggle);row.append(cell);$('results').append(row);
+    if(expanded)modules.slice(3,-3).forEach(appendFile);
+    modules.slice(-3).forEach(appendFile);
+  }
+  renderDownloads();
   $('otaNotice').textContent='OTA 설치: ZIP의 JAD와 모든 COD를 같은 서버 폴더에 올리고 JAD 링크를 여세요.';
   updateUploadState();
   $('uploadResult').hidden=true;
@@ -187,4 +205,5 @@ async function refreshStore(){
   }catch(e){$('storeStatus').textContent=e.message;throw e}finally{lockStore(false)}
 }
 $('storeRefresh').onclick=action(refreshStore);
-$('storeDetails').ontoggle=action(async()=>{if($('storeDetails').open&&!storeLoaded)await refreshStore()});
+$('storeDetails').ontoggle=()=>{if($('storeDetails').open&&!storeLoaded)refreshStore().catch(()=>{})};
+if($('storeDetails').open)refreshStore().catch(()=>{});
