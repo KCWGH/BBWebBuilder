@@ -28,6 +28,15 @@ tools/JDE71/lib/net_rim_api.jar
 비밀번호는 `openssl rand -hex 24`로 생성할 수 있다. 업로드/삭제를 사용할 때는 `BB_UPLOAD_TOKEN`도 설정한다.
 이 파일은 컨테이너에 읽기 전용으로 mount되며 이미지에 복사되지 않는다.
 로그인 설정이 없으면 외부 호스트를 허용하는 서버는 시작하지 않는다.
+컨테이너는 uid/gid 10001로 실행하므로 Linux bind mount의 읽기 권한도 맞춘다.
+파일 소유자는 현재 사용자로 유지하고 컨테이너 그룹만 읽을 수 있게 한다.
+
+```sh
+sudo chgrp 10001 .env
+chmod 640 .env
+chmod 755 tools tools/JDE71 tools/JDE71/bin tools/JDE71/lib
+chmod 644 tools/JDE71/bin/rapc.jar tools/JDE71/lib/net_rim_api.jar
+```
 
 ```sh
 docker compose build
