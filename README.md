@@ -10,6 +10,8 @@ Ubuntu x86_64 서버에 Docker Engine와 Compose plugin을 설치한다.
 32비트 정적 Linux preverify를 실행할 수 있는 커널이 필요하다.
 
 ```sh
+mkdir -p ~/Services
+cd ~/Services
 git clone https://github.com/KCWGH/BBWebBuilder.git
 cd BBWebBuilder
 cp .env.example .env
@@ -53,6 +55,14 @@ Nginx도 컨테이너라면 localhost 대신 같은 Docker network의 builder:50
 ```sh
 sudo nginx -t
 sudo systemctl reload nginx
+```
+
+KimServer의 준비된 배포 경로는 `/home/zenio07/Services/BBWebBuilder`다.
+SDK와 .env가 준비되어 있으면 다음 명령으로 Docker 설치·실행과 기존 Nginx 반영을 함께 처리한다.
+스크립트는 Nginx 설정을 백업하고 검사 실패 시 복구한다.
+
+```powershell
+ssh.exe -t KimServer "cd ~/Services/BBWebBuilder && sudo bash deploy/install-ubuntu.sh"
 ```
 
 접속: **https://zenio07.duckdns.org/builder/**.
