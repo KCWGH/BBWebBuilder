@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BlackBerry 빌더</title>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('bb-theme')||'system'}catch{}</script>
+<style>
+:root{color-scheme:light;--bg:Canvas;--surface:ButtonFace;--text:CanvasText;--muted:GrayText;--line:ButtonBorder;--link:LinkText;--error:#ae2424}
+:root[data-theme="dark"]{color-scheme:dark;--error:#ffa3a3}
+@media(prefers-color-scheme:dark){:root[data-theme="system"]{color-scheme:dark;--error:#ffa3a3}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:13px/1.5 system-ui,sans-serif}header{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:10px 20px;border-bottom:1px solid var(--line)}h1{margin:0;font-size:16px;font-weight:600}h2{margin:0;font-size:13px;font-weight:600}main{padding:16px 20px;max-width:1500px;margin:auto}
+button,input,select{font:inherit}a{color:var(--link)}label{display:block}input:not([type="checkbox"]),.fields select{width:100%}input[type="checkbox"]{margin:0;flex:none}
+.toolbar,.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.theme{display:flex;align-items:center;gap:6px}.toolbar{padding-bottom:12px;border-bottom:1px solid var(--line)}#location{font-size:12px;color:var(--muted);margin:8px 0 0;overflow-wrap:anywhere}#toolStatus{margin-left:auto;color:var(--muted);font-size:12px}#jdpPicker{margin-top:10px}#jdpPicker label{display:inline;margin-right:8px}#empty{padding:24px 0;color:var(--muted)}#error{color:var(--error);border:1px solid var(--error);padding:8px 10px;margin:12px 0;white-space:pre-wrap}[hidden]{display:none!important}
+.settings{padding:14px 0}.settings-heading{display:flex;align-items:baseline;flex-wrap:wrap;gap:12px;margin-bottom:8px}#projectLabel{color:var(--muted);font-size:12px;overflow-wrap:anywhere}.fields{display:grid;grid-template-columns:1.2fr 1fr 1fr .65fr 1.5fr;gap:12px}.fields label{color:var(--muted);font-size:12px;margin-bottom:4px}.workspace{display:grid;grid-template-columns:minmax(280px,1.15fr) minmax(260px,1fr);border:1px solid var(--line)}.file-panel{border-right:1px solid var(--line);min-width:0}.panel-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 12px;background:var(--surface);border-bottom:1px solid var(--line)}.file-filter{padding:10px 12px 0}
+#tree{height:460px;overflow:auto;padding:8px 12px}#tree ul{list-style:none;margin:0;padding:0}#tree ul.children{margin-left:8px;padding-left:16px;border-left:1px solid var(--line)}#tree summary{cursor:pointer;padding:3px 0;white-space:nowrap}.folder-content{display:inline-flex;align-items:center;gap:7px;vertical-align:middle}.folder-name{font-weight:600}.folder-count{color:var(--muted);font-size:11px}.file{display:flex;align-items:center;gap:7px;padding:4px 5px 4px 14px;white-space:nowrap;width:max-content;min-width:100%}.file-name{font:12px/1.5 Consolas,'Malgun Gothic',monospace}.missing{color:var(--error)}.file-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-top:1px solid var(--line)}#count{font-size:12px;color:var(--muted)}.output-panel{min-width:0}#status{color:var(--muted);font-size:12px}pre{margin:0;padding:10px 12px;font:12px/1.6 Consolas,'Malgun Gothic',monospace;white-space:pre-wrap;overflow-wrap:anywhere;overflow:auto}#logs{height:190px}#resultArea{border-top:1px solid var(--line)}.result-content{padding:10px 12px}table{border-collapse:collapse;width:100%}td{padding:4px 0;border-bottom:1px solid var(--line)}td:first-child{overflow-wrap:anywhere}td:last-child{color:var(--muted);text-align:right;padding-left:10px;white-space:nowrap;font-size:12px}#otaNotice,#uploadHint{font-size:12px;color:var(--muted);margin:10px 0}#uploadResult{padding:8px 0;max-height:150px}
+@media(max-width:850px){.fields{grid-template-columns:1fr 1fr}.fields>div:last-child{grid-column:1/-1}.workspace{grid-template-columns:1fr}.file-panel{border-right:0;border-bottom:1px solid var(--line)}#tree{height:350px}#toolStatus{margin-left:0;width:100%}}@media(max-width:480px){header{padding:10px 12px}main{padding:12px}.fields{gap:8px}}
+/* Layout and spacing only; controls retain their browser appearance. */
+header{max-width:1120px;margin:auto;padding:14px 20px}
+main{max-width:1120px;padding:16px 20px 24px}
+button,select,input:not([type="checkbox"]){min-height:30px;padding:3px 7px}
+button{white-space:nowrap}
+.toolbar{gap:8px;padding-bottom:14px}
+.settings{padding:18px 0}
+.settings-heading{margin-bottom:12px}
+.fields{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 110px;grid-template-areas:"title name version" "vendor icon icon";gap:10px 16px;align-items:end}
+.fields>div:nth-child(1){grid-area:title}
+.fields>div:nth-child(2){grid-area:name}
+.fields>div:nth-child(3){grid-area:vendor}
+.fields>div:nth-child(4){grid-area:version}
+.fields>div:nth-child(5){grid-area:icon}
+.fields label{margin-bottom:5px}
+.workspace{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;border:0;align-items:start}
+.file-panel{border:1px solid var(--line)}
+.output-panel>section{border:1px solid var(--line)}
+.panel-heading{min-height:44px;padding:8px 12px}
+.panel-heading .row{gap:6px}
+.panel-heading button{min-height:26px;padding:2px 6px;font-size:12px}
+.file-filter{padding:12px 12px 4px}
+#tree{height:auto;min-height:240px;max-height:480px;max-height:min(52vh,480px);padding:6px 12px 12px}
+.file-footer{padding:10px 12px;min-height:48px}
+#logs{height:auto;min-height:76px;max-height:260px;padding:12px}
+#resultArea{margin-top:16px}
+.result-content{padding:8px 12px 12px}
+td{padding:7px 0}
+@media(max-width:850px){.workspace{grid-template-columns:1fr}.file-panel{border-right:1px solid var(--line)}.fields{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"title name" "vendor version" "icon icon"}.fields>div:last-child{grid-column:auto}#tree{max-height:350px}#toolStatus{width:auto;margin-left:auto}}
+@media(max-width:480px){header{padding:12px}main{padding:12px}.toolbar{gap:6px}#toolStatus{margin-left:0;width:100%}.fields{gap:10px}.panel-heading .row{width:100%}.panel-heading{gap:6px}}
+.files-summary{padding:10px 12px;cursor:pointer;background:var(--surface)}
+#storeDetails th{text-align:left;font-weight:600;padding:10px 0 6px;border-bottom:1px solid var(--line)}#storeDetails td:last-child{text-align:left}#storeDetails th,#storeDetails td{padding-right:12px}
+</style>
+</head>
+<body>
+<header><h1>BlackBerry 빌더</h1><div class="theme"><label for="theme">화면</label><select id="theme"><option value="system">시스템</option><option value="light">라이트</option><option value="dark">다크</option></select></div></header>
+<main>
+<div class="toolbar"><button id="open">JDP 열기</button><button id="folderButton">폴더 가져오기</button><button id="zipButton">ZIP 가져오기</button><span id="toolStatus">도구 확인 중…</span></div>
+<p id="location" hidden></p>
+<input id="folder" type="file" webkitdirectory multiple hidden><input id="zip" type="file" accept=".zip" hidden>
+<div id="jdpPicker" hidden><label for="jdps">JDP</label><select id="jdps"></select></div>
+<div id="error" role="alert" hidden></div>
+<p id="empty">JDP를 열거나, JDP와 소스가 들어 있는 폴더·ZIP을 가져오세요.</p>
+<div id="projectArea" hidden>
+<section class="settings" aria-label="앱 설정"><div class="settings-heading"><h2>앱 설정</h2><span id="projectLabel"></span></div>
+<div class="fields"><div><label for="title">앱 이름</label><input id="title" maxlength="100"></div><div><label for="name">모듈 이름 (영문·숫자·_)</label><input id="name" pattern="[A-Za-z][A-Za-z0-9_]{0,63}"></div><div><label for="vendor">개발자</label><input id="vendor" maxlength="100"></div><div><label for="version">버전</label><input id="version" placeholder="1.0.0"></div><div><label for="icon">아이콘 (16 KiB 이하)</label><select id="icon"></select></div></div></section>
+<div class="workspace"><section class="file-panel" aria-label="빌드 파일">
+<details id="fileDetails"><summary class="files-summary">빌드 파일</summary><div class="panel-heading"><div class="row"><button id="all">전체 선택</button><button id="none">선택 해제</button><button id="expand">전체 펼치기</button></div></div>
+<div class="file-filter"><input id="search" type="search" placeholder="파일·폴더 검색" aria-label="파일·폴더 검색"></div><div id="tree" aria-label="프로젝트 파일"></div>
+</details><div class="file-footer"><span id="count"></span><button id="build" >빌드</button></div></section>
+<div class="output-panel"><section aria-label="빌드 로그"><div class="panel-heading"><h2>빌드 로그</h2><span id="status" role="status">준비됨</span></div><pre id="logs"></pre></section>
+<section id="resultArea" aria-label="빌드 결과" hidden><div class="panel-heading"><h2>빌드 결과</h2><span id="moduleCount"></span></div><div class="result-content"><table aria-label="다운로드 파일"><tbody id="results"></tbody></table><p id="otaNotice"></p><p id="uploadHint"></p><pre id="uploadResult" hidden></pre></div></section></div>
+</div></div>
+<details id="storeDetails" style="margin-top:16px;border:1px solid var(--line)"><summary class="files-summary">앱스토어</summary><div class="result-content"><div class="row"><button id="storeRefresh">새로고침</button><span id="storeStatus" role="status"></span></div><div style="overflow:auto"><table aria-label="앱스토어 앱 목록"><thead><tr><th scope="col">앱 이름</th><th scope="col">버전</th><th scope="col">상태</th><th scope="col">관리</th></tr></thead><tbody id="storeApps"></tbody></table></div></div></details>
+</main>
+<script src="app.js"></script>
+</body></html>

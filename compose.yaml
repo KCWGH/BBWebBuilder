@@ -1,0 +1,23 @@
+services:
+  builder:
+    build: .
+    image: bbwebbuilder:local
+    platform: linux/amd64
+    restart: unless-stopped
+    init: true
+    ports:
+      - "127.0.0.1:5002:5001"
+    environment:
+      BB_ALLOWED_HOSTS: "127.0.0.1,localhost,zenio07.duckdns.org"
+      BB_ROOT_PATH: /builder
+    volumes:
+      - builder-data:/data
+      - ./tools:/tools:ro
+      - ./.env:/run/secrets/builder.env:ro
+    mem_limit: 2g
+    cpus: 2
+    pids_limit: 128
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+volumes:
+  builder-data:

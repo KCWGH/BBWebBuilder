@@ -1,0 +1,9 @@
+**
+!Dockerfile
+!requirements.txt
+!server.py
+!legacy.py
+!artifacts.py
+!picker.py
+!app.js
+!index.html
