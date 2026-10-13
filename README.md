@@ -30,6 +30,10 @@ tools/JDE71/lib/net_rim_api.jar
 비밀번호는 `openssl rand -hex 24`로 생성할 수 있다. 업로드/삭제를 사용할 때는 `BB_UPLOAD_TOKEN`도 설정한다.
 이 파일은 컨테이너에 읽기 전용으로 mount되며 이미지에 복사되지 않는다.
 로그인 설정이 없으면 외부 호스트를 허용하는 서버는 시작하지 않는다.
+웹 접속 시 페이지 안의 로그인 폼에서 `.env`의 아이디와 비밀번호를 입력한다.
+브라우저 기본 인증창을 사용하지 않으므로 내장 브라우저에서도 같은 방식으로 로그인할 수 있다.
+로그인은 HttpOnly 세션 쿠키로 12시간 유지되며, 로그아웃 또는 서버 재시작 시 다시 로그인한다.
+HTTPS 배포에서는 Secure 쿠키를 사용한다. 기존 Basic 인증은 CLI/진단 도구 호환용으로 유지한다.
 컨테이너는 uid/gid 10001로 실행하므로 Linux bind mount의 읽기 권한도 맞춘다.
 파일 소유자는 현재 사용자로 유지하고 컨테이너 그룹만 읽을 수 있게 한다.
 
@@ -140,6 +144,7 @@ PC 로컬 모드에서는 JDP 열기가 Windows 파일 선택 창을 사용한�
 ```sh
 python -m pip install -r requirements-dev.txt
 python -m unittest discover -p test_builder.py
+python -m unittest test_auth
 node --test test_jdp_import.js
 ```
 

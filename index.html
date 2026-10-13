@@ -11,7 +11,7 @@
 *{box-sizing:border-box}[hidden]{display:none!important}
 body{margin:0;background:Canvas;color:CanvasText;font:14px/1.5 system-ui,sans-serif}
 header,main{max-width:1440px;margin:auto;padding:16px 24px}
-header{display:flex;justify-content:space-between;align-items:center;gap:16px;border-bottom:1px solid var(--line)}
+header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;border-bottom:1px solid var(--line)}
 h1{margin:0;font-size:17px;font-weight:600}h2{margin:0;font-size:14px;font-weight:600}
 button,input,select{font:inherit;min-width:0}button,select,input:not([type="checkbox"]){min-height:34px;padding:4px 8px}button{cursor:pointer}
 a{color:LinkText;overflow-wrap:anywhere}label{display:block}input:not([type="checkbox"]),.fields select{width:100%}
@@ -41,7 +41,7 @@ table{border-collapse:collapse;width:100%;table-layout:fixed}td,th{padding:8px 0
 </style>
 </head>
 <body>
-<header><h1>BlackBerry 빌더</h1><div class="theme"><label for="theme">화면</label><select id="theme"><option value="system">시스템</option><option value="light">라이트</option><option value="dark">다크</option></select></div></header>
+<header><h1>BlackBerry 빌더</h1><div class="row"><div class="theme"><label for="theme">화면</label><select id="theme"><option value="system">시스템</option><option value="light">라이트</option><option value="dark">다크</option></select></div><button id="logout" hidden>로그아웃</button></div></header>
 <main>
 <div id="error" role="alert" hidden></div>
 <div class="app-layout"><section class="builder-panel" aria-label="빌드 환경">

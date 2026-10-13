@@ -30,7 +30,7 @@ COPY --from=compiler /usr/share/common-licenses/GPL-2 /usr/share/doc/preverify/C
 WORKDIR /app
 COPY requirements.txt .
 RUN python3 -m venv /opt/venv && pip install --no-cache-dir -r requirements.txt
-COPY server.py legacy.py artifacts.py picker.py app.js jdp-import.js index.html ./
+COPY server.py legacy.py artifacts.py picker.py app.js jdp-import.js index.html login.html ./
 USER builder
 EXPOSE 5001
 VOLUME ["/data"]

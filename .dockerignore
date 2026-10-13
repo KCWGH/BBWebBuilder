@@ -11,3 +11,4 @@ deploy/*
 !app.js
 !jdp-import.js
 !index.html
+!login.html

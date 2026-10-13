@@ -134,8 +134,9 @@ setInterval(async()=>{
   if(document.hidden||busy||$('resultArea').hidden)return;
   try{config=await api('/api/config');updateUploadState()}catch{}
 },5000);
-(async()=>{try{config=await api('/api/config');$('toolStatus').textContent=config.tools_ready?'Java6 / JDE 7.1':'Java6 / JDE 경로를 확인하세요'}catch(e){showError(e.message)}})();
-async function api(url,options={}){const response=await fetch(url.replace(/^\//,''),options);if(!response.ok){const data=await response.json().catch(()=>({detail:response.statusText}));throw Error(typeof data.detail==='string'?data.detail:JSON.stringify(data.detail))}return response.json()}
+(async()=>{try{config=await api('/api/config');$('logout').hidden=!config.authentication_required;$('toolStatus').textContent=config.tools_ready?'Java6 / JDE 7.1':'Java6 / JDE 경로를 확인하세요'}catch(e){showError(e.message)}})();
+async function api(url,options={}){const response=await fetch(url.replace(/^\//,''),options);if(!response.ok){const data=await response.json().catch(()=>({detail:response.statusText}));if(response.status===401&&data.detail==='로그인이 필요합니다.')location.replace('login');throw Error(typeof data.detail==='string'?data.detail:JSON.stringify(data.detail))}return response.json()}
+$('logout').onclick=action(async()=>{await api('/api/auth/logout',{method:'POST'});location.replace('login')});
 function json(body){return {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}}
 function action(fn){return async()=>{clearError();try{await fn()}catch(e){showError(e.message)}}}
 function setProject(data){localProject=null;$('localProject').hidden=true;pid=data.id;$('jdps').replaceChildren(...data.jdps.map(p=>new Option(p,p)));$('jdpPicker').hidden=data.jdps.length<2;$('location').hidden=!data.location;renderProject(data.project)}

@@ -12,13 +12,15 @@ import zipfile
 import secrets
 import base64
 import signal
+import time
+import hashlib
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 from urllib import request, error
 from urllib.parse import quote
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv, dotenv_values
 
@@ -60,6 +62,10 @@ pool = ThreadPoolExecutor(max_workers=1)
 projects, jobs = {}, {}
 lock = threading.Lock()
 picker_lock = threading.Lock()
+auth_lock = threading.Lock()
+sessions = {}
+SESSION_COOKIE = 'bb_builder_session'
+SESSION_SECONDS = 12 * 60 * 60
 STATE = DATA / 'state.json'
 
 
@@ -92,20 +98,79 @@ async def local_only(req: Request, next_handler):
     host = req.headers.get('host', '').split(':')[0]
     origin = req.headers.get('origin')
     if host not in ALLOWED_HOSTS or (origin and urlsplit(origin).netloc != req.headers.get('host')):
-        from fastapi.responses import JSONResponse
         return JSONResponse({'detail': '로컬 브라우저에서만 사용할 수 있습니다.'}, status_code=403)
+    root_path = req.scope.get('root_path', '').rstrip('/')
+    path = req.url.path
+    if root_path and path.startswith(root_path + '/'):
+        path = path[len(root_path):]
     if WEB_USER or WEB_PASSWORD:
-        try:
-            scheme, encoded = req.headers.get('authorization', '').split(' ', 1)
-            username, password = base64.b64decode(encoded, validate=True).decode().split(':', 1)
-            valid = scheme.lower() == 'basic' and secrets.compare_digest(username.encode(), WEB_USER.encode()) and secrets.compare_digest(password.encode(), WEB_PASSWORD.encode())
-        except (ValueError, UnicodeError):
-            valid = False
+        valid = False
+        token = req.cookies.get(SESSION_COOKIE, '')
+        if token:
+            key = hashlib.sha256(token.encode()).hexdigest()
+            with auth_lock:
+                expires = sessions.get(key, 0)
+                valid = expires > time.time()
+                if expires and not valid:
+                    sessions.pop(key, None)
         if not valid:
-            from fastapi.responses import JSONResponse
-            return JSONResponse({'detail': '로그인이 필요합니다.'}, status_code=401,
-                                headers={'WWW-Authenticate': 'Basic realm="BlackBerry Builder"'})
+            try:
+                scheme, encoded = req.headers.get('authorization', '').split(' ', 1)
+                username, password = base64.b64decode(encoded, validate=True).decode().split(':', 1)
+                valid = scheme.lower() == 'basic' and credentials_match(username, password)
+            except (ValueError, UnicodeError):
+                pass
+        if path in {'/login', '/api/auth/login', '/api/auth/logout'}:
+            return await next_handler(req)
+        if not valid:
+            if path == '/':
+                return RedirectResponse(root_path + '/login', status_code=303, headers={'Cache-Control': 'no-store'})
+            return JSONResponse({'detail': '로그인이 필요합니다.'}, status_code=401)
     return await next_handler(req)
+
+
+def credentials_match(username, password):
+    return secrets.compare_digest(username.encode(), WEB_USER.encode()) and secrets.compare_digest(password.encode(), WEB_PASSWORD.encode())
+
+
+@app.get('/login')
+def login_page():
+    return FileResponse(ROOT / 'login.html', headers={'Cache-Control': 'no-store'})
+
+
+class LoginRequest(BaseModel):
+    username: str = Field(max_length=100)
+    password: str = Field(max_length=1024)
+
+
+@app.post('/api/auth/login')
+def login(body: LoginRequest, req: Request):
+    if not credentials_match(body.username, body.password):
+        raise HTTPException(401, '아이디 또는 비밀번호가 맞지 않습니다.')
+    token = secrets.token_urlsafe(32)
+    with auth_lock:
+        now = time.time()
+        for key, expires in list(sessions.items()):
+            if expires <= now:
+                sessions.pop(key, None)
+        if len(sessions) >= 100:
+            sessions.pop(next(iter(sessions)))
+        sessions[hashlib.sha256(token.encode()).hexdigest()] = now + SESSION_SECONDS
+    response = JSONResponse({'status': 'authenticated'}, headers={'Cache-Control': 'no-store'})
+    response.set_cookie(SESSION_COOKIE, token, max_age=SESSION_SECONDS, httponly=True,
+                        secure=req.url.scheme == 'https' or req.headers.get('x-forwarded-proto') == 'https',
+                        samesite='lax', path=(req.scope.get('root_path', '').rstrip('/') + '/') or '/')
+    return response
+
+
+@app.post('/api/auth/logout')
+def logout(req: Request):
+    token = req.cookies.get(SESSION_COOKIE, '')
+    with auth_lock:
+        sessions.pop(hashlib.sha256(token.encode()).hexdigest(), None)
+    response = JSONResponse({'status': 'logged_out'}, headers={'Cache-Control': 'no-store'})
+    response.delete_cookie(SESSION_COOKIE, path=(req.scope.get('root_path', '').rstrip('/') + '/') or '/')
+    return response
 
 
 def safe_path(base, relative):
@@ -164,6 +229,7 @@ def import_script():
 @app.get('/api/config')
 def config():
     return {'tools_ready': JAVA.is_file() and all((TOOLS / p).is_file() for p in ['JDE71/bin/rapc.jar', 'JDE71/lib/net_rim_api.jar']),
+            'authentication_required': bool(WEB_USER or WEB_PASSWORD),
             'native_picker': NATIVE_PICKER,
             'package_upload_ready': bool(PACKAGE_URL and upload_token())}
 

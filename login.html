@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>로그인 · BlackBerry 빌더</title>
+<style>
+:root{color-scheme:light dark}*{box-sizing:border-box}body{margin:0;background:Canvas;color:CanvasText;font:16px/1.5 system-ui,sans-serif}main{max-width:360px;margin:12vh auto;padding:20px}h1{font-size:20px;margin:0 0 24px}label{display:block;margin:16px 0 6px}input,button{font:inherit;width:100%;min-height:44px;padding:8px}button{margin-top:20px;cursor:pointer}#error{white-space:pre-wrap;overflow-wrap:anywhere}[hidden]{display:none}
+</style>
+</head>
+<body><main><h1>BlackBerry 빌더 로그인</h1>
+<form id="loginForm"><label for="username">아이디</label><input id="username" name="username" autocomplete="username" required maxlength="100" autofocus>
+<label for="password">비밀번호</label><input id="password" name="password" type="password" autocomplete="current-password" required maxlength="1024">
+<button id="submit" type="submit">로그인</button><p id="error" role="alert" hidden></p></form>
+</main><script>
+document.getElementById('loginForm').onsubmit=async event=>{
+  event.preventDefault();const button=document.getElementById('submit'),error=document.getElementById('error');button.disabled=true;error.hidden=true;
+  try{
+    const response=await fetch('api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:document.getElementById('username').value,password:document.getElementById('password').value})});
+    const data=await response.json();if(!response.ok)throw Error(typeof data.detail==='string'?data.detail:'로그인에 실패했습니다.');
+    document.getElementById('password').value='';location.replace('./');
+  }catch(e){error.textContent=e.message;error.hidden=false}finally{button.disabled=false}
+};
+</script></body></html>
