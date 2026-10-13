@@ -1,0 +1,14 @@
+--- a/src/file.c
++++ b/src/file.c
+@@ -761,7 +761,10 @@
+                 }
+             }
+             WriteClass(cb);
+-            Str2IDFree_Local(&nameTypeHash);
++            /* Loaded classes keep their method IDs across VerifyFile calls.
++             * Freeing the shared table here reuses IDs for different names
++             * and makes verification depend on directory traversal order.
++             * Keep it alive until this preverify process exits. */
+         }
+     }
+ }

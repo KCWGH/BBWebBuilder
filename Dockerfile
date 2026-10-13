@@ -1,11 +1,13 @@
 FROM ubuntu:26.04 AS compiler
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y --no-install-recommends gcc-multilib make curl ca-certificates unzip && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends gcc-multilib make curl ca-certificates unzip patch && rm -rf /var/lib/apt/lists/*
 WORKDIR /build
+COPY deploy/preverify-stable-ids.patch /build/preverify-stable-ids.patch
 RUN curl -fL --retry 3 https://codeload.github.com/sympower/phoneme-preverifier/zip/655d18803d8eb34c480fcff7b571cbf5f07cee2e -o source.zip \
  && echo '6bc0dc95fed31a781aec71ed3edb201c4180ac298c9b213ee8f8f91909eb0ff3  source.zip' | sha256sum -c - \
  && unzip -q source.zip \
- && cd phoneme-preverifier-*/build/linux && make clean all EXTRACFLAGS='-std=gnu89 -fcommon' \
+ && cd phoneme-preverifier-* && patch -p1 < /build/preverify-stable-ids.patch \
+ && cd build/linux && make clean all EXTRACFLAGS='-std=gnu89 -fcommon' \
  && cp preverify /build/preverify
 RUN curl -fL --retry 3 https://cdn.azul.com/zulu/bin/zulu6.22.0.3-ca-jdk6.0.119-linux_x64.tar.gz -o jdk.tar.gz \
  && echo 'dd4765b45d9f1fc319a6e5be0bbc79371582daa8fd77872d51072f16deca2625  jdk.tar.gz' | sha256sum -c - \
@@ -23,6 +25,7 @@ COPY --from=compiler /build/java6 /opt/java6
 COPY --from=compiler /build/preverify /opt/bin/preverify
 # Keep corresponding GPL source and copyright notices for the compiled tool.
 COPY --from=compiler /build/source.zip /usr/share/doc/preverify/source.zip
+COPY --from=compiler /build/preverify-stable-ids.patch /usr/share/doc/preverify/preverify-stable-ids.patch
 COPY --from=compiler /usr/share/common-licenses/GPL-2 /usr/share/doc/preverify/COPYING
 WORKDIR /app
 COPY requirements.txt .

@@ -1,6 +1,9 @@
 **
 !Dockerfile
 !requirements.txt
+!deploy/
+deploy/*
+!deploy/preverify-stable-ids.patch
 !server.py
 !legacy.py
 !artifacts.py

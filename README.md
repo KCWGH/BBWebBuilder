@@ -131,6 +131,14 @@ BB_TEST_URL로 시험 주소를 지정하며 로컬 .env 로그인 정보로 접
 서버에 시험 프로젝트/빌드 데이터를 생성하지만 앱스토어 업로드/삭제는 실행하지 않는다.
 선택적으로 첫 인자에 실제 JDP 경로를 넘길 수 있다(TwoDots 4모듈 검증용).
 
+네이티브 검증기의 클래스 처리 순서 회귀 검증:
+
+```sh
+sudo docker compose exec -T builder python - < deploy/test-native.py
+```
+
+정상 상속은 두 가지 클래스 처리 순서에서 통과하고, 실제 final 메서드 재정의는 두 순서에서 모두 거부해야 한다.
+
 실검증: Ubuntu26.04 이미지의 Linux Java6/native preverify로 CLDC 1모듈, MIDlet 1모듈,
 큰 리소스 10모듈 및 TwoDots 4모듈 빌드와 다운로드 ZIP 무결성 통과.
 Nginx /builder/ prefix, 로그인 거부/승인, 재시작 후 작업/다운로드 복구를 검증했다.
@@ -140,6 +148,10 @@ Nginx /builder/ prefix, 로그인 거부/승인, 재시작 후 작업/다운로�
 
 Dockerfile은 Azul Zulu Java6와 phoneME 소스 커밋을 고정하고 다운로드 SHA256을 검증한다.
 preverify의 GPLv2 라이선스와 대응 소스 ZIP을 이미지의 `/usr/share/doc/preverify/`에 포함한다.
+같은 경로의 `preverify-stable-ids.patch`를 원본 소스에 적용해 빌드한다.
+원본 검증기는 클래스마다 전역 메서드 식별자 표를 해제하지만, 이미 로드한 클래스는 이전 식별자를 유지한다.
+그 결과 파일 처리 순서에 따라 서로 다른 메서드를 같다고 판단해 정상 상속을 거부한다.
+패치는 식별자 표를 검증기 프로세스 종료까지 유지하며, 바이트코드 검증 및 final 검사 자체는 유지한다.
 Java6의 라이선스/원본 포함 파일도 `/opt/java6/`에 유지한다.
 BlackBerry RAPC/API는 사용자가 보유한 JDE에서 별도로 제공한다.
 SDK 파일이나 비밀값을 공개 저장소에 추가하지 않는다.

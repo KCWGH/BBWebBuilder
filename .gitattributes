@@ -6,3 +6,4 @@
 *.conf text eol=lf
 Dockerfile text eol=lf
 *.sh text eol=lf
+*.patch text eol=lf
