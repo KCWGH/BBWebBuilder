@@ -9,7 +9,7 @@ function showError(message){$('error').textContent=message;$('error').hidden=fal
 function clearError(){$('error').hidden=true}
 function lockInputs(value){
   busy=value;
-  for(const id of ['open','folderButton','zipButton','selectProjectFolder','cancelLocalProject','jdps','build','all','none','title','name','vendor','version','icon'])$(id).disabled=value;
+  for(const id of ['open','selectProjectFolder','cancelLocalProject','jdps','build','all','none','title','name','vendor','version','icon'])$(id).disabled=value;
   if(project)renderTree();
 }
 function makeTree(files){
@@ -164,7 +164,6 @@ $('selectProjectFolder').onclick=()=>{
 $('jdpFolder').onchange=action(async()=>{
   const files=[...$('jdpFolder').files];$('jdpFolder').value='';if(files.length)await importLocalProject(p=>JdpImport.fromFiles(p,files));
 });
-$('folderButton').onclick=()=>$('folder').click();$('zipButton').onclick=()=>$('zip').click();$('folder').onchange=action(async()=>{if($('folder').files.length)await importFiles($('folder').files,true);$('folder').value=''});$('zip').onchange=action(async()=>{if($('zip').files.length)await importFiles($('zip').files,false);$('zip').value=''});
 $('jdps').onchange=action(async()=>renderProject(await api(`/api/projects/${pid}?jdp=${encodeURIComponent($('jdps').value)}`)));
 $('search').oninput=()=>project&&renderTree();$('all').onclick=()=>{project.files.forEach(f=>f.selected=f.exists);renderTree()};$('none').onclick=()=>{project.files.forEach(f=>f.selected=false);renderTree()};
 $('build').onclick=action(async()=>{if(busy)return;const body={project_id:pid,jdp:project.jdp,files:project.files.filter(f=>f.selected).map(f=>f.path)};for(const key of ['title','name','vendor','version','icon'])body[key]=$(key).value;lockInputs(true);$('resultArea').hidden=true;$('status').textContent='빌드 요청 중…';try{const job=await api('/api/build',json(body));jid=job.id;await poll()}catch(e){lockInputs(false);$('status').textContent='실패';throw e}});
