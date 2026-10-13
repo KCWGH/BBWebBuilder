@@ -15,7 +15,7 @@ from artifacts import validate_package
 from legacy import build_jdp_text, parse_jdp
 
 base = os.getenv('BB_TEST_URL', 'http://127.0.0.1:5052/builder/')
-settings = dotenv_values(Path(__file__).resolve().parent.parent / '.env')
+settings = dotenv_values(os.getenv('BB_TEST_CONFIG_FILE', str(Path(__file__).resolve().parent.parent / '.env')))
 auth = base64.b64encode(f"{settings['BB_WEB_USER']}:{settings['BB_WEB_PASSWORD']}".encode()).decode()
 
 
@@ -47,6 +47,8 @@ for name, midlet, resource in [('SmokeCLDC', False, False), ('SmokeMIDlet', True
     entries[name + '.jdp'] = build_jdp_text(name, list(entries), [], name, 'Test', '1.0').replace('/', '\\').encode()
     fixtures.append((name, entries, 2 if resource else 1))
 if len(sys.argv) > 1:
+    if os.getenv('BB_TEST_ONLY_REAL') == '1':
+        fixtures.clear()
     jdp = Path(sys.argv[1]); info = parse_jdp(jdp)
     entries = {p: (jdp.parent / p).read_bytes() for p in info['files'] + info['icons']}
     entries[jdp.name] = jdp.read_bytes()
@@ -72,7 +74,7 @@ for name, entries, minimum_modules in fixtures:
             break
         assert time.monotonic() < deadline, 'Build timed out'
         time.sleep(0.5)
-    assert job['status'] == 'complete', job['logs']
+    assert job['status'] == 'complete', {'id': jid, 'logs': job['logs']}
     assert job['modules'] >= minimum_modules, job
     payload = call(f"releases/{jid}/{job['package']}")
     with tempfile.TemporaryDirectory() as temp:
