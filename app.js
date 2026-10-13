@@ -157,13 +157,10 @@ async function importLocalProject(read){
   try{const selection=await read(localProject);await importFiles(selection.files,false,selection.paths)}
   finally{lockInputs(false);$('toolStatus').textContent=config.tools_ready?'Java6 / JDE 7.1':'Java6 / JDE 경로를 확인하세요'}
 }
-$('selectProjectFolder').onclick=action(async()=>{
+$('selectProjectFolder').onclick=()=>{
   if(!localProject||busy)return;
-  if(window.isSecureContext&&window.showDirectoryPicker){
-    try{const directory=await window.showDirectoryPicker({id:'bb-project',mode:'read'});await importLocalProject(p=>JdpImport.fromDirectory(p,directory))}
-    catch(error){if(error.name==='AbortError')return;if(error.name==='SecurityError'){$('jdpFolder').click();return}throw error}
-  }else $('jdpFolder').click();
-});
+  clearError();$('jdpFolder').click();
+};
 $('jdpFolder').onchange=action(async()=>{
   const files=[...$('jdpFolder').files];$('jdpFolder').value='';if(files.length)await importLocalProject(p=>JdpImport.fromFiles(p,files));
 });
